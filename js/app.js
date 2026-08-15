@@ -174,7 +174,7 @@ function renderCrewSlot(member, index) {
 
 function renderBaseStatsTable(ledgerEl) {
   let html = `<div class="stat-table-head">
-    <span>Stat</span><span>Your Base</span><span>Final</span>
+    <span>Stat</span><span>Base</span><span>Your Roll</span><span>Final</span>
   </div>`;
   BASE_STAT_GROUPS.forEach(g => {
     html += `<div class="ledger-group"><h4>${g.label}</h4>`;
@@ -182,7 +182,11 @@ function renderBaseStatsTable(ledgerEl) {
       html += `
         <div class="stat-row">
           <span class="ledger-label">${s.label}</span>
-          <input type="number" step="any" class="stat-input" data-role="base-stat" data-stat="${s.key}" />
+          <span class="ledger-value stat-base" data-role="avg-stat" data-stat="${s.key}">—</span>
+          <span class="stat-roll-cell">
+            <input type="number" step="any" class="stat-input" data-role="base-stat" data-stat="${s.key}" />
+            <em class="stat-delta" data-role="roll-delta" data-stat="${s.key}"></em>
+          </span>
           <span class="ledger-value" data-role="final-stat" data-stat="${s.key}">—</span>
         </div>`;
     });
@@ -191,10 +195,28 @@ function renderBaseStatsTable(ledgerEl) {
   ledgerEl.innerHTML = html;
 }
 
-function fillBaseStatsFromState(ledgerEl, state) {
+function fillBaseStatsFromState(ledgerEl, state, shipAvg) {
   BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
     const input = ledgerEl.querySelector(`[data-role="base-stat"][data-stat="${s.key}"]`);
     if (input) input.value = state.base[s.key];
+    const avgEl = ledgerEl.querySelector(`[data-role="avg-stat"][data-stat="${s.key}"]`);
+    if (avgEl) avgEl.textContent = fmtByUnit(s.unit, shipAvg[s.key]);
+  }));
+}
+
+function updateRollDeltas(ledgerEl, state, shipAvg) {
+  BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
+    const el = ledgerEl.querySelector(`[data-role="roll-delta"][data-stat="${s.key}"]`);
+    if (!el) return;
+    const avg = shipAvg[s.key];
+    const roll = Number(state.base[s.key]) || 0;
+    if (!avg) { el.textContent = ""; return; }
+    const deltaPct = ((roll - avg) / avg) * 100;
+    if (Math.abs(deltaPct) < 0.05) { el.textContent = "avg"; el.className = "stat-delta"; }
+    else {
+      el.textContent = (deltaPct > 0 ? "+" : "") + fmt1(deltaPct) + "%";
+      el.className = "stat-delta " + (deltaPct > 0 ? "stat-delta--up" : "stat-delta--down");
+    }
   }));
 }
 
@@ -247,14 +269,16 @@ function initBuilder(root, opts) {
   function recalc() {
     const computed = computeFinals(state);
     updateFinalValues(ledgerEl, computed);
+    updateRollDeltas(ledgerEl, state, getShipDefaults(currentShip()));
     if (opts.onChange) opts.onChange(computed);
     return computed;
   }
 
   function resetBaseStatsForNewShip() {
     const ship = currentShip();
+    const avg = getShipDefaults(ship);
     state.base = getShipDefaults(ship);
-    fillBaseStatsFromState(ledgerEl, state);
+    fillBaseStatsFromState(ledgerEl, state, avg);
   }
 
   shipSelect.addEventListener("change", () => {
@@ -338,7 +362,7 @@ function initBuilder(root, opts) {
   renderShipMeta();
   renderCrew();
   renderBaseStatsTable(ledgerEl);
-  fillBaseStatsFromState(ledgerEl, state);
+  fillBaseStatsFromState(ledgerEl, state, getShipDefaults(currentShip()));
   recalc();
 
   return { state, recalc, getResult: () => computeFinals(state) };
