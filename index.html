@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Outlands Boating — UO Outlands Ship Stat Calculator &amp; Comparator</title>
+  <meta name="description" content="Free ship stat calculator for Ultima Online Outlands. Enter your ship's base stats, add Outfittings, Specialty Items, Crew Supplies, and crew, then compare two full ship builds side by side." />
+  <link rel="canonical" href="https://outlandsboating.com/" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Outlands Boating — UO Outlands Ship Stat Calculator" />
+  <meta property="og:description" content="Build and compare Ultima Online Outlands ship configurations: base stats, upgrades, and crew, all in one calculator." />
+  <meta property="og:url" content="https://outlandsboating.com/" />
+  <meta property="og:site_name" content="Outlands Boating" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Outlands Boating — UO Outlands Ship Stat Calculator" />
+  <meta name="twitter:description" content="Build and compare Ultima Online Outlands ship configurations: base stats, upgrades, and crew, all in one calculator." />
+
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0d12" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- Google Analytics (replace G-XXXXXXXXXX with your Measurement ID) -->
+  <script>
+    window.GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID.indexOf("XXXX") === -1) {
+      gtag('config', window.GA_MEASUREMENT_ID);
+    }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Outlands Boating Ship Calculator",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any (web browser)",
+    "url": "https://outlandsboating.com/",
+    "description": "A ship stat calculator and comparator for the Ultima Online Outlands shard, covering ship base stats, Outfittings, Specialty Items, Crew Supplies, and crewmember bonuses.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header__row">
+      <a class="brand" href="/">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 17c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M5 13.5 6 6h5l4 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11 6V2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>
+          <span class="brand__name">Outlands Boating</span>
+          <span class="brand__tag">UO Outlands Ship Toolkit</span>
+        </span>
+      </a>
+      <div class="header__links">
+        <a class="pill-link" href="#calculator">Ship Builder</a>
+        <a class="pill-link" href="#about">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero__badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 17c1.5 1.3 3 1.3 4.5 0s3-1.3 4.5 0 3 1.3 4.5 0 3-1.3 4.5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M5 13.5 6 6h5l4 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 6V2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1>Chart your ship's stats before you set sail.</h1>
+        <p class="lede">Pick a hull, fit it with Outfittings, Specialty Items and Crew Supplies, crew it up, and see exactly what you're getting — then compare two builds side by side to settle which upgrades are worth pursuing.</p>
+        <div class="hero__actions">
+          <a class="btn btn--solid" href="#calculator">Open the calculator</a>
+          <a class="btn" href="#about">How the numbers work</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tool" id="calculator">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <h2>Build your ship</h2>
+            <p>Choose a hull and fit it out. Every stat updates live in the manifest on the right.</p>
+          </div>
+          <div class="mode-toggle">
+            <input type="radio" name="mode" id="mode-single" checked />
+            <label class="mode-toggle__opt" for="mode-single">Single build</label>
+            <input type="radio" name="mode" id="mode-compare" />
+            <label class="mode-toggle__opt" for="mode-compare">Compare builds</label>
+          </div>
+        </div>
+
+        <!-- Single builder -->
+        <div id="single-wrap">
+          <div id="builder-single" class="builder-grid">
+            <div class="builder-card">
+              <div class="builder-card__label">Hull</div>
+              <h3>Ship &amp; Fittings</h3>
+              <div class="field-grid">
+                <label>Ship type
+                  <select data-role="ship-select"></select>
+                </label>
+                <label>Outfitting
+                  <select data-role="outfitting-select"></select>
+                </label>
+                <label>Specialty Item
+                  <select data-role="specialty-select"></select>
+                </label>
+              </div>
+              <label style="max-width:260px; margin-bottom:16px;">Crew Supply
+                <select data-role="supply-select"></select>
+              </label>
+              <div class="ship-meta" data-role="ship-meta"></div>
+
+              <div class="crew-section">
+                <h4>Crew</h4>
+                <div class="crew-list" data-role="crew-list"></div>
+                <button type="button" class="btn-add" data-role="add-crew">+ Add crewmember</button>
+                <p class="crew-cap-note" data-role="crew-cap-note"></p>
+              </div>
+            </div>
+
+            <div class="ledger" data-role="ledger" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- Compare builders -->
+        <div id="compare-wrap" hidden>
+          <div class="compare-grid">
+            <div>
+              <div class="compare-col__label">Build A</div>
+              <div id="builder-a" class="builder-grid">
+                <div class="builder-card">
+                  <div class="builder-card__label">Hull</div>
+                  <h3>Ship &amp; Fittings</h3>
+                  <div class="field-grid">
+                    <label>Ship type
+                      <select data-role="ship-select"></select>
+                    </label>
+                    <label>Outfitting
+                      <select data-role="outfitting-select"></select>
+                    </label>
+                    <label>Specialty Item
+                      <select data-role="specialty-select"></select>
+                    </label>
+                  </div>
+                  <label style="max-width:260px; margin-bottom:16px;">Crew Supply
+                    <select data-role="supply-select"></select>
+                  </label>
+                  <div class="ship-meta" data-role="ship-meta"></div>
+                  <div class="crew-section">
+                    <h4>Crew</h4>
+                    <div class="crew-list" data-role="crew-list"></div>
+                    <button type="button" class="btn-add" data-role="add-crew">+ Add crewmember</button>
+                    <p class="crew-cap-note" data-role="crew-cap-note"></p>
+                  </div>
+                </div>
+                <div class="ledger" data-role="ledger" aria-live="polite"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="compare-col__label">Build B</div>
+              <div id="builder-b" class="builder-grid">
+                <div class="builder-card">
+                  <div class="builder-card__label">Hull</div>
+                  <h3>Ship &amp; Fittings</h3>
+                  <div class="field-grid">
+                    <label>Ship type
+                      <select data-role="ship-select"></select>
+                    </label>
+                    <label>Outfitting
+                      <select data-role="outfitting-select"></select>
+                    </label>
+                    <label>Specialty Item
+                      <select data-role="specialty-select"></select>
+                    </label>
+                  </div>
+                  <label style="max-width:260px; margin-bottom:16px;">Crew Supply
+                    <select data-role="supply-select"></select>
+                  </label>
+                  <div class="ship-meta" data-role="ship-meta"></div>
+                  <div class="crew-section">
+                    <h4>Crew</h4>
+                    <div class="crew-list" data-role="crew-list"></div>
+                    <button type="button" class="btn-add" data-role="add-crew">+ Add crewmember</button>
+                    <p class="crew-cap-note" data-role="crew-cap-note"></p>
+                  </div>
+                </div>
+                <div class="ledger" data-role="ledger" aria-live="polite"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="diff-panel">
+            <h3>Build A vs Build B</h3>
+            <div id="diff-output"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about" id="about">
+      <div class="container about__grid">
+        <div>
+          <h2>How the numbers work</h2>
+          <p>Ship base stats (Hull, Sail, and Gun HP, cannons per side, max crew, and forward speed) come straight from each hull's crafting values. Outfittings, Specialty Items, and Crew Supplies each add percentage bonuses on top — the calculator sums every bonus you've fitted and applies it to the base.</p>
+          <p>Crewmembers are modeled by profession, rank, and the pips you allocate to their bonus stats. Loyalty level increases (which slightly grow a crewmember's bonuses over time in-game) aren't factored in — this tool assumes a freshly-hired crewmember at base loyalty, so treat crew numbers as a floor rather than a ceiling.</p>
+        </div>
+        <div class="source-note">
+          Data sourced from the UO Outlands Wiki (Ships, Ship Upgrades, and Ship Crewmembers pages). This is an unofficial fan tool and isn't affiliated with UO Outlands or Electronic Arts.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; width:100%;">
+      <span>Outlands Boating — an unofficial UO Outlands fan tool.</span>
+      <span><a href="https://wiki.uooutlands.com/Ships" target="_blank" rel="noopener">Source data: UO Outlands Wiki</a></span>
+    </div>
+  </footer>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
