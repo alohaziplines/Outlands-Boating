@@ -118,10 +118,10 @@
                 <label>Specialty Item
                   <select data-role="specialty-select"></select>
                 </label>
+                <label>Crew Supply
+                  <select data-role="supply-select"></select>
+                </label>
               </div>
-              <label style="max-width:260px; margin-bottom:16px;">Crew Supply
-                <select data-role="supply-select"></select>
-              </label>
               <div class="ship-meta" data-role="ship-meta"></div>
 
               <div class="crew-section">
@@ -155,10 +155,10 @@
                     <label>Specialty Item
                       <select data-role="specialty-select"></select>
                     </label>
+                    <label>Crew Supply
+                      <select data-role="supply-select"></select>
+                    </label>
                   </div>
-                  <label style="max-width:260px; margin-bottom:16px;">Crew Supply
-                    <select data-role="supply-select"></select>
-                  </label>
                   <div class="ship-meta" data-role="ship-meta"></div>
                   <div class="crew-section">
                     <h4>Crew</h4>
@@ -187,10 +187,10 @@
                     <label>Specialty Item
                       <select data-role="specialty-select"></select>
                     </label>
+                    <label>Crew Supply
+                      <select data-role="supply-select"></select>
+                    </label>
                   </div>
-                  <label style="max-width:260px; margin-bottom:16px;">Crew Supply
-                    <select data-role="supply-select"></select>
-                  </label>
                   <div class="ship-meta" data-role="ship-meta"></div>
                   <div class="crew-section">
                     <h4>Crew</h4>
@@ -216,7 +216,7 @@
       <div class="container about__grid">
         <div>
           <h2>How the numbers work</h2>
-          <p>Ship base stats (Hull, Sail, and Gun HP, cannons per side, max crew, and forward speed) come straight from each hull's crafting values. Outfittings, Specialty Items, and Crew Supplies each add percentage bonuses on top — the calculator sums every bonus you've fitted and applies it to the base.</p>
+          <p>Every crafted ship rolls its own base stats — the "Roll %" column is the variance your specific ship rolled (shown in-game as "Base vs Average"). Enter that roll, and it stacks with every Outfitting, Specialty Item, and Crew Supply bonus you've fitted, applied straight to the ship type's underlying base. For most stats that's additive percentage on top of a real base value (Hull, Sail, Speed, Cannon Damage); a few stats — Crew Bravery, Crew Damage, Doubloons, Tidings, Effective Fishing, Spyglass — roll from zero, so their Final is just your roll plus your upgrades added directly. Cooldowns, Repair Cooldown, Cannon Reload Time, and Wake Scalar always reduce, so those fields auto-apply a minus sign for you.</p>
           <p>Crewmembers are modeled by profession, rank, and the pips you allocate to their bonus stats. Loyalty level increases (which slightly grow a crewmember's bonuses over time in-game) aren't factored in — this tool assumes a freshly-hired crewmember at base loyalty, so treat crew numbers as a floor rather than a ceiling.</p>
         </div>
         <div class="source-note">

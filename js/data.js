@@ -29,50 +29,52 @@ const SHIPS = [
 // Ordered, grouped metadata for every stat a crafted ship rolls.
 // unit: 'flat' | 'pct' | 'time' (seconds) | 'speed' (tiles/sec)
 // bonusKey: which upgrade/crew bonus total (see OUTFITTINGS etc.) applies
-// bonusMode: 'mult-pct' (base*(1+bonus%)), 'add-pct' (base+bonus percentage points),
-//            'add-flat' (base+bonus), 'reduce-time' (base*(1-bonus%), floored),
-//            'reduce-time-div' (base/(1+bonus%)), 'reduce-pct' (base-bonus, floored at 25)
+// mode: 'mult' — stat has a real nonzero ship-type base; final = base * (1 + (roll% + upgrade%)/100)
+//       'add'  — stat has no base (rolls from 0); final = roll + upgrade, summed directly, no base involved
+// negativeOnly: true for stats where a roll/upgrade % can only ever reduce the value
+//       (ability cooldowns, repair cooldown, cannon reload time, wake scalar) — the
+//       input auto-forces a negative sign so the player never has to type the minus.
 const BASE_STAT_GROUPS = [
   { key: "hull", label: "Hull &amp; Structure", stats: [
-    { key: "hull", label: "Hull Max Points", unit: "flat", bonusKey: "hull", bonusMode: "mult-pct" },
-    { key: "sail", label: "Sail Max Points", unit: "flat", bonusKey: "sail", bonusMode: "mult-pct" },
-    { key: "gun", label: "Gun Max Points", unit: "flat", bonusKey: "gun", bonusMode: "mult-pct" }
+    { key: "hull", label: "Hull Max Points", unit: "flat", bonusKey: "hull", mode: "mult" },
+    { key: "sail", label: "Sail Max Points", unit: "flat", bonusKey: "sail", mode: "mult" },
+    { key: "gun", label: "Gun Max Points", unit: "flat", bonusKey: "gun", mode: "mult" }
   ]},
   { key: "sailing", label: "Sailing", stats: [
-    { key: "fwdSpeed", label: "Forward Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
-    { key: "strafeSpeed", label: "Strafe Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
-    { key: "revSpeed", label: "Reverse Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
-    { key: "wake", label: "Wake Scalar", unit: "pct", bonusKey: "wake", bonusMode: "reduce-pct" }
+    { key: "fwdSpeed", label: "Forward Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
+    { key: "strafeSpeed", label: "Strafe Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
+    { key: "revSpeed", label: "Reverse Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
+    { key: "wake", label: "Wake Scalar", unit: "pct", bonusKey: "wake", mode: "mult", negativeOnly: true }
   ]},
   { key: "combat", label: "Combat", stats: [
-    { key: "cannonAcc", label: "Cannon Accuracy", unit: "pct", bonusKey: "acc", bonusMode: "add-pct" },
-    { key: "cannonDmgMin", label: "Cannon Min Damage", unit: "flat", bonusKey: "dmg", bonusMode: "mult-pct" },
-    { key: "cannonDmgMax", label: "Cannon Max Damage", unit: "flat", bonusKey: "dmg", bonusMode: "mult-pct" },
-    { key: "cannonReload", label: "Cannon Reload Time", unit: "time", bonusKey: "rld", bonusMode: "reduce-time-div" }
+    { key: "cannonAcc", label: "Cannon Accuracy", unit: "pct", bonusKey: "acc", mode: "mult" },
+    { key: "cannonDmgMin", label: "Cannon Min Damage", unit: "flat", bonusKey: "dmg", mode: "mult" },
+    { key: "cannonDmgMax", label: "Cannon Max Damage", unit: "flat", bonusKey: "dmg", mode: "mult" },
+    { key: "cannonReload", label: "Cannon Reload Time", unit: "time", bonusKey: "rld", mode: "mult", negativeOnly: true }
   ]},
   { key: "abilities", label: "Ability Cooldowns", stats: [
-    { key: "lesserCd", label: "Lesser Ability Cooldown", unit: "time", bonusKey: "lsr", bonusMode: "reduce-time" },
-    { key: "regularCd", label: "Regular Ability Cooldown", unit: "time", bonusKey: "reg", bonusMode: "reduce-time" },
-    { key: "greaterCd", label: "Greater Ability Cooldown", unit: "time", bonusKey: "grt", bonusMode: "reduce-time" }
+    { key: "lesserCd", label: "Lesser Ability Cooldown", unit: "time", bonusKey: "lsr", mode: "mult", negativeOnly: true },
+    { key: "regularCd", label: "Regular Ability Cooldown", unit: "time", bonusKey: "reg", mode: "mult", negativeOnly: true },
+    { key: "greaterCd", label: "Greater Ability Cooldown", unit: "time", bonusKey: "grt", mode: "mult", negativeOnly: true }
   ]},
   { key: "repair", label: "Repair", stats: [
-    { key: "repairCd", label: "Repair Cooldown", unit: "time", bonusKey: "rpr", bonusMode: "reduce-time" },
-    { key: "hullRepair", label: "Hull Repair Amount", unit: "pct", bonusKey: "huRp", bonusMode: "add-pct" },
-    { key: "sailRepair", label: "Sail Repair Amount", unit: "pct", bonusKey: "saRp", bonusMode: "add-pct" },
-    { key: "gunRepair", label: "Gun Repair Amount", unit: "pct", bonusKey: "guRp", bonusMode: "add-pct" }
+    { key: "repairCd", label: "Repair Cooldown", unit: "time", bonusKey: "rpr", mode: "mult", negativeOnly: true },
+    { key: "hullRepair", label: "Hull Repair Amount", unit: "pct", bonusKey: "huRp", mode: "mult" },
+    { key: "sailRepair", label: "Sail Repair Amount", unit: "pct", bonusKey: "saRp", mode: "mult" },
+    { key: "gunRepair", label: "Gun Repair Amount", unit: "pct", bonusKey: "guRp", mode: "mult" }
   ]},
   { key: "crew", label: "Crew", stats: [
-    { key: "crewHp", label: "Crew Hit Points Bonus", unit: "pct", bonusKey: "crHt", bonusMode: "add-pct" },
-    { key: "crewBravery", label: "Crew Bravery Bonus", unit: "pct", bonusKey: "brav", bonusMode: "add-pct" },
-    { key: "crewDmg", label: "Crew Damage Bonus", unit: "pct", bonusKey: "crDmg", bonusMode: "add-pct" },
-    { key: "crewHeal", label: "Crew Healing Bonus", unit: "pct", bonusKey: "heal", bonusMode: "add-pct" }
+    { key: "crewHp", label: "Crew Hit Points Bonus", unit: "pct", bonusKey: "crHt", mode: "add" },
+    { key: "crewBravery", label: "Crew Bravery Bonus", unit: "pct", bonusKey: "brav", mode: "add" },
+    { key: "crewDmg", label: "Crew Damage Bonus", unit: "pct", bonusKey: "crDmg", mode: "add" },
+    { key: "crewHeal", label: "Crew Healing Bonus", unit: "pct", bonusKey: "heal", mode: "add" }
   ]},
   { key: "economy", label: "Economy", stats: [
-    { key: "boarding", label: "Boarding Chance", unit: "pct", bonusKey: "brd", bonusMode: "add-pct" },
-    { key: "doubloons", label: "Doubloons Earned Bonus", unit: "pct", bonusKey: "dbl", bonusMode: "add-pct" },
-    { key: "tidings", label: "Tidings Bonus", unit: "pct", bonusKey: "tid", bonusMode: "add-pct" },
-    { key: "fishing", label: "Effective Fishing Skill", unit: "flat", bonusKey: "fsh", bonusMode: "add-flat" },
-    { key: "spyglass", label: "Spyglass Distance Bonus", unit: "pct", bonusKey: "spy", bonusMode: "add-pct" }
+    { key: "boarding", label: "Boarding Chance", unit: "pct", bonusKey: "brd", mode: "mult" },
+    { key: "doubloons", label: "Doubloons Earned Bonus", unit: "pct", bonusKey: "dbl", mode: "add" },
+    { key: "tidings", label: "Tidings Bonus", unit: "pct", bonusKey: "tid", mode: "add" },
+    { key: "fishing", label: "Effective Fishing Skill", unit: "flat", bonusKey: "fsh", mode: "add" },
+    { key: "spyglass", label: "Spyglass Distance Bonus", unit: "pct", bonusKey: "spy", mode: "add" }
   ]}
 ];
 
@@ -161,7 +163,7 @@ const SPECIALTY_ITEMS = [
   { id: "luxury-goods",         name: "Luxury Goods",         stats: { spd: 0, dbl: 12.5, crHt: 5, heal: 7.5 } },
   { id: "livestock",            name: "Livestock",            stats: { dbl: 10, crHt: 10, heal: 15 } },
   { id: "grain-shipment",       name: "Grain Shipment",       stats: { dbl: 10, crHt: 15, heal: 5 } },
-  { id: "crows-nest",           name: "Crow's Nest",          stats: { acc: 2.5, reg: 5, spy: 20 } },
+  { id: "crows-nest",           name: "Crows Nest",          stats: { acc: 2.5, reg: 5, spy: 20 } },
   { id: "weathervane",          name: "Weathervane",          stats: { spd: 5, spy: 5, wake: 5 } },
   { id: "telescope",            name: "Telescope",            stats: { spd: 2.5, spy: 10, wake: 10 } },
   { id: "signal-pigeons",       name: "Signal Pigeons",       stats: { lsr: 5, reg: 5, grt: 5, wake: 10 } },

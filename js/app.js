@@ -1,9 +1,14 @@
 /* ==========================================================================
    Outlands Boating — calculator logic
 
-   A ship's base stats are rolled per-crafted-ship (RNG around a type
-   average), not fixed by ship type. The player enters their own ship's
-   actual base stats; upgrades and crew then apply on top of those.
+   Model: each ship type has an internal base value per stat (not shown to
+   the player). The player enters only the % they rolled on their ship
+   (shown in-game as "Base vs Average"), plus whichever Outfitting,
+   Specialty Item, and Crew Supply they've fitted. Final = base stat with
+   the roll % and every upgrade % stacked additively on top of it — except
+   for stats with no real base (several Crew/Economy bonuses roll from 0),
+   where final is just the roll % plus upgrade % added directly, no base
+   multiplication involved.
    ========================================================================== */
 
 function fmt2(n) { return (Math.round(n * 100) / 100).toString(); }
@@ -19,6 +24,10 @@ function fmtTime(seconds) {
 
 function byId(arr, id) {
   return arr.find(x => x.id === id) || null;
+}
+
+function sortedByName(arr) {
+  return arr.slice().sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function emptyBonusTotals() {
@@ -38,14 +47,13 @@ function addStats(totals, stats) {
 /* ---------------- Builder state ---------------- */
 
 function createBuilderState() {
-  const ship = SHIPS[0];
   return {
-    shipId: ship.id,
-    base: getShipDefaults(ship),
+    shipId: SHIPS[0].id,
+    roll: {},         // stat key -> player-entered roll % (or flat, for fishing)
     outfittingId: "",
     specialtyId: "",
     supplyId: "",
-    crew: [] // { professionId, rankId, pips: { statKey: n, ... } }
+    crew: []
   };
 }
 
@@ -71,32 +79,33 @@ function computeBonusTotals(state) {
   return totals;
 }
 
-function applyBonus(baseValue, bonusPct, mode) {
-  switch (mode) {
-    case "mult-pct": return baseValue * (1 + bonusPct / 100);
-    case "add-pct": return baseValue + bonusPct;
-    case "add-flat": return baseValue + bonusPct;
-    case "reduce-time": return Math.max(baseValue * (1 - bonusPct / 100), 0);
-    case "reduce-time-div": return baseValue / (1 + bonusPct / 100);
-    case "reduce-pct": return Math.max(baseValue - bonusPct, 25);
-    default: return baseValue;
-  }
-}
-
 function computeFinals(state) {
   const ship = byId(SHIPS, state.shipId);
+  const shipAvg = getShipDefaults(ship);
   const bonusTotals = computeBonusTotals(state);
   const finals = {};
+
   BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
-    const baseVal = Number(state.base[s.key]) || 0;
-    const bonus = bonusTotals[s.bonusKey] || 0;
-    finals[s.key] = applyBonus(baseVal, bonus, s.bonusMode);
+    const rollRaw = Number(state.roll[s.key]) || 0;
+    const roll = s.negativeOnly ? -Math.abs(rollRaw) : rollRaw;
+    let upgrade = bonusTotals[s.bonusKey] || 0;
+    if (s.negativeOnly) upgrade = -Math.abs(upgrade); // upgrade data is stored positive ("beneficial"); these stats always reduce
+
+    if (s.mode === "add") {
+      finals[s.key] = roll + upgrade;
+    } else {
+      const base = shipAvg[s.key];
+      finals[s.key] = base * (1 + (roll + upgrade) / 100);
+      if (s.key === "wake") finals[s.key] = Math.max(finals[s.key], 25);
+      if (s.unit === "time") finals[s.key] = Math.max(finals[s.key], 0);
+    }
   }));
+
   return { ship, bonusTotals, finals };
 }
 
 function fmtByUnit(unit, value) {
-  if (unit === "flat") return fmtInt(value);
+  if (unit === "flat") return (value > 0 ? "+" : "") + fmt1(value);
   if (unit === "speed") return fmt2(value) + " t/s";
   if (unit === "time") return fmtTime(value);
   return fmt1(value) + "%"; // pct
@@ -104,22 +113,27 @@ function fmtByUnit(unit, value) {
 
 /* ---------------- Rendering: static option lists ---------------- */
 
-function optionsHTML(list, selectedId, placeholder) {
+function optionsHTML(list, selectedId, placeholder, alphabetize) {
   let html = "";
   if (placeholder) html += `<option value="">${placeholder}</option>`;
-  list.forEach(item => {
+  const items = alphabetize ? sortedByName(list) : list;
+  items.forEach(item => {
     html += `<option value="${item.id}" ${item.id === selectedId ? "selected" : ""}>${item.name}</option>`;
   });
   return html;
 }
 
 function professionOptionsHTML(selectedId) {
-  return optionsHTML(PROFESSIONS, selectedId, "Choose a profession…");
+  let html = `<option value="">Choose a profession…</option>`;
+  sortedByName(PROFESSIONS).forEach(item => {
+    html += `<option value="${item.id}" ${item.id === selectedId ? "selected" : ""}>${item.name}</option>`;
+  });
+  return html;
 }
 
 function rankOptionsHTML(selectedId) {
   let html = `<option value="">Choose a rank…</option>`;
-  CREW_RANKS.forEach(r => {
+  CREW_RANKS.forEach(r => { // rank order is deliberately Novice -> Legendary, not alphabetical
     html += `<option value="${r.id}" ${String(r.id) === String(selectedId) ? "selected" : ""}>${r.name} (${r.pipCap} pip${r.pipCap > 1 ? "s" : ""})</option>`;
   });
   return html;
@@ -174,18 +188,18 @@ function renderCrewSlot(member, index) {
 
 function renderBaseStatsTable(ledgerEl) {
   let html = `<div class="stat-table-head">
-    <span>Stat</span><span>Base</span><span>Your Roll</span><span>Final</span>
+    <span>Stat</span><span>Roll %</span><span>Final</span>
   </div>`;
   BASE_STAT_GROUPS.forEach(g => {
     html += `<div class="ledger-group"><h4>${g.label}</h4>`;
     g.stats.forEach(s => {
+      const negCue = s.negativeOnly ? `<em class="stat-neg-cue">always −</em>` : "";
       html += `
         <div class="stat-row">
           <span class="ledger-label">${s.label}</span>
-          <span class="ledger-value stat-base" data-role="avg-stat" data-stat="${s.key}">—</span>
           <span class="stat-roll-cell">
-            <input type="number" step="any" class="stat-input" data-role="base-stat" data-stat="${s.key}" />
-            <em class="stat-delta" data-role="roll-delta" data-stat="${s.key}"></em>
+            ${s.negativeOnly ? `<span class="stat-sign">−</span>` : ""}
+            <input type="number" step="any" min="0" class="stat-input ${s.negativeOnly ? "stat-input--neg" : ""}" placeholder="0" data-role="roll-stat" data-stat="${s.key}" />
           </span>
           <span class="ledger-value" data-role="final-stat" data-stat="${s.key}">—</span>
         </div>`;
@@ -195,29 +209,8 @@ function renderBaseStatsTable(ledgerEl) {
   ledgerEl.innerHTML = html;
 }
 
-function fillBaseStatsFromState(ledgerEl, state, shipAvg) {
-  BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
-    const input = ledgerEl.querySelector(`[data-role="base-stat"][data-stat="${s.key}"]`);
-    if (input) input.value = state.base[s.key];
-    const avgEl = ledgerEl.querySelector(`[data-role="avg-stat"][data-stat="${s.key}"]`);
-    if (avgEl) avgEl.textContent = fmtByUnit(s.unit, shipAvg[s.key]);
-  }));
-}
-
-function updateRollDeltas(ledgerEl, state, shipAvg) {
-  BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
-    const el = ledgerEl.querySelector(`[data-role="roll-delta"][data-stat="${s.key}"]`);
-    if (!el) return;
-    const avg = shipAvg[s.key];
-    const roll = Number(state.base[s.key]) || 0;
-    if (!avg) { el.textContent = ""; return; }
-    const deltaPct = ((roll - avg) / avg) * 100;
-    if (Math.abs(deltaPct) < 0.05) { el.textContent = "avg"; el.className = "stat-delta"; }
-    else {
-      el.textContent = (deltaPct > 0 ? "+" : "") + fmt1(deltaPct) + "%";
-      el.className = "stat-delta " + (deltaPct > 0 ? "stat-delta--up" : "stat-delta--down");
-    }
-  }));
+function clearRollInputs(ledgerEl) {
+  ledgerEl.querySelectorAll('[data-role="roll-stat"]').forEach(el => { el.value = ""; });
 }
 
 function updateFinalValues(ledgerEl, computed) {
@@ -242,10 +235,10 @@ function initBuilder(root, opts) {
   const shipMetaEl = root.querySelector('[data-role="ship-meta"]');
   const ledgerEl = root.querySelector('[data-role="ledger"]');
 
-  shipSelect.innerHTML = optionsHTML(SHIPS, state.shipId);
-  outfittingSelect.innerHTML = optionsHTML(OUTFITTINGS, state.outfittingId, "None");
-  specialtySelect.innerHTML = optionsHTML(SPECIALTY_ITEMS, state.specialtyId, "None");
-  supplySelect.innerHTML = optionsHTML(CREW_SUPPLIES, state.supplyId, "None");
+  shipSelect.innerHTML = optionsHTML(SHIPS, state.shipId, null, false); // ship type stays smallest -> largest
+  outfittingSelect.innerHTML = optionsHTML(OUTFITTINGS, state.outfittingId, "None", true);
+  specialtySelect.innerHTML = optionsHTML(SPECIALTY_ITEMS, state.specialtyId, "None", true);
+  supplySelect.innerHTML = optionsHTML(CREW_SUPPLIES, state.supplyId, "None", true);
 
   function currentShip() { return byId(SHIPS, state.shipId); }
 
@@ -269,16 +262,8 @@ function initBuilder(root, opts) {
   function recalc() {
     const computed = computeFinals(state);
     updateFinalValues(ledgerEl, computed);
-    updateRollDeltas(ledgerEl, state, getShipDefaults(currentShip()));
     if (opts.onChange) opts.onChange(computed);
     return computed;
-  }
-
-  function resetBaseStatsForNewShip() {
-    const ship = currentShip();
-    const avg = getShipDefaults(ship);
-    state.base = getShipDefaults(ship);
-    fillBaseStatsFromState(ledgerEl, state, avg);
   }
 
   shipSelect.addEventListener("change", () => {
@@ -287,7 +272,6 @@ function initBuilder(root, opts) {
     if (state.crew.length > ship.maxCrew) state.crew = state.crew.slice(0, ship.maxCrew);
     renderShipMeta();
     renderCrew();
-    resetBaseStatsForNewShip();
     recalc();
   });
 
@@ -353,16 +337,16 @@ function initBuilder(root, opts) {
 
   ledgerEl.addEventListener("input", (e) => {
     const el = e.target;
-    if (el.dataset.role !== "base-stat") return;
+    if (el.dataset.role !== "roll-stat") return;
     const val = parseFloat(el.value);
-    state.base[el.dataset.stat] = isNaN(val) ? 0 : val;
+    state.roll[el.dataset.stat] = isNaN(val) ? 0 : val;
     recalc();
   });
 
   renderShipMeta();
   renderCrew();
   renderBaseStatsTable(ledgerEl);
-  fillBaseStatsFromState(ledgerEl, state, getShipDefaults(currentShip()));
+  clearRollInputs(ledgerEl);
   recalc();
 
   return { state, recalc, getResult: () => computeFinals(state) };
