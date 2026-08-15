@@ -354,7 +354,28 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 
 /* ---------------- Crew slots ---------------- */
 
-.crew-section h4 {
+.crew-card {
+  margin-top: 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: relative;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.crew-card::before {
+  content: "";
+  position: absolute; top: 0; left: 0; width: 20px; height: 20px;
+  border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+  pointer-events: none;
+}
+.crew-card::after {
+  content: "";
+  position: absolute; bottom: 0; right: 0; width: 20px; height: 20px;
+  border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent);
+  pointer-events: none;
+}
+
+.crew-card h4 {
   color: var(--text);
   font-size: 0.88rem;
   margin-bottom: 10px;
@@ -495,24 +516,19 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 }
 
 .stat-roll-cell {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
-  justify-content: flex-end;
 }
 
 .stat-sign {
+  position: absolute;
+  left: 8px;
   font-family: var(--font-mono);
   font-size: 0.85rem;
   color: var(--down);
-  flex: none;
-}
-
-.stat-neg-cue {
-  font-style: normal;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  color: var(--text-faint);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .stat-input {
@@ -527,8 +543,17 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
   border-radius: 0;
 }
 .stat-input::placeholder { color: var(--text-faint); }
-.stat-input--neg { border-color: rgba(255, 107, 91, 0.3); }
+.stat-roll-cell--neg .stat-input { padding-left: 18px; border-color: rgba(255, 107, 91, 0.3); }
 .stat-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+.final-box {
+  display: block;
+  width: 100%;
+  text-align: right;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+}
 
 .ledger-label { color: var(--text-soft); font-size: 0.83rem; }
 

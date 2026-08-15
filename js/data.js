@@ -40,11 +40,10 @@ const BASE_STAT_GROUPS = [
     { key: "sail", label: "Sail Max Points", unit: "flat", bonusKey: "sail", mode: "mult" },
     { key: "gun", label: "Gun Max Points", unit: "flat", bonusKey: "gun", mode: "mult" }
   ]},
-  { key: "sailing", label: "Sailing", stats: [
+  { key: "sailing", label: "Speed", stats: [
     { key: "fwdSpeed", label: "Forward Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
     { key: "strafeSpeed", label: "Strafe Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
-    { key: "revSpeed", label: "Reverse Speed", unit: "speed", bonusKey: "spd", mode: "mult" },
-    { key: "wake", label: "Wake Scalar", unit: "pct", bonusKey: "wake", mode: "mult", negativeOnly: true }
+    { key: "revSpeed", label: "Reverse Speed", unit: "speed", bonusKey: "spd", mode: "mult" }
   ]},
   { key: "combat", label: "Combat", stats: [
     { key: "cannonAcc", label: "Cannon Accuracy", unit: "pct", bonusKey: "acc", mode: "mult" },
@@ -74,7 +73,8 @@ const BASE_STAT_GROUPS = [
     { key: "doubloons", label: "Doubloons Earned Bonus", unit: "pct", bonusKey: "dbl", mode: "add" },
     { key: "tidings", label: "Tidings Bonus", unit: "pct", bonusKey: "tid", mode: "add" },
     { key: "fishing", label: "Effective Fishing Skill", unit: "flat", bonusKey: "fsh", mode: "add" },
-    { key: "spyglass", label: "Spyglass Distance Bonus", unit: "pct", bonusKey: "spy", mode: "add" }
+    { key: "spyglass", label: "Spyglass Distance Bonus", unit: "pct", bonusKey: "spy", mode: "add" },
+    { key: "wake", label: "Wake Scalar", unit: "pct", bonusKey: "wake", mode: "mult", negativeOnly: true }
   ]}
 ];
 

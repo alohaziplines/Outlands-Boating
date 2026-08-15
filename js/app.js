@@ -193,15 +193,14 @@ function renderBaseStatsTable(ledgerEl) {
   BASE_STAT_GROUPS.forEach(g => {
     html += `<div class="ledger-group"><h4>${g.label}</h4>`;
     g.stats.forEach(s => {
-      const negCue = s.negativeOnly ? `<em class="stat-neg-cue">always −</em>` : "";
       html += `
         <div class="stat-row">
           <span class="ledger-label">${s.label}</span>
-          <span class="stat-roll-cell">
+          <span class="stat-roll-cell ${s.negativeOnly ? "stat-roll-cell--neg" : ""}">
             ${s.negativeOnly ? `<span class="stat-sign">−</span>` : ""}
-            <input type="number" step="any" min="0" class="stat-input ${s.negativeOnly ? "stat-input--neg" : ""}" placeholder="0" data-role="roll-stat" data-stat="${s.key}" />
+            <input type="number" step="any" min="0" class="stat-input" placeholder="0" data-role="roll-stat" data-stat="${s.key}" />
           </span>
-          <span class="ledger-value" data-role="final-stat" data-stat="${s.key}">—</span>
+          <span class="ledger-value final-box" data-role="final-stat" data-stat="${s.key}">—</span>
         </div>`;
     });
     html += `</div>`;
