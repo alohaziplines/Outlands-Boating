@@ -6,11 +6,8 @@
 
 const SHIPS = [
   { id: "small",         name: "Small Ship",         maxCrew: 2, cannons: 2, cannonRange: 12, registrationCost: 0,       hull: 2000, sail: 1800, gun: 1800, speed: 6.25,  wake: 50 },
-  { id: "small-dragon",  name: "Small Dragonship",   maxCrew: 2, cannons: 2, cannonRange: 12, registrationCost: 0,       hull: 2000, sail: 1800, gun: 1800, speed: 6.25,  wake: 50 },
   { id: "medium",        name: "Medium Ship",        maxCrew: 3, cannons: 3, cannonRange: 12, registrationCost: 10000,  hull: 3000, sail: 2700, gun: 2700, speed: 5.556, wake: 75 },
-  { id: "medium-dragon", name: "Medium Dragonship",  maxCrew: 3, cannons: 3, cannonRange: 12, registrationCost: 10000,  hull: 3000, sail: 2700, gun: 2700, speed: 5.556, wake: 75 },
   { id: "large",         name: "Large Ship",         maxCrew: 4, cannons: 4, cannonRange: 12, registrationCost: 50000,  hull: 4000, sail: 3600, gun: 3600, speed: 5,     wake: 100 },
-  { id: "large-dragon",  name: "Large Dragonship",   maxCrew: 4, cannons: 4, cannonRange: 12, registrationCost: 50000,  hull: 4000, sail: 3600, gun: 3600, speed: 5,     wake: 100 },
   { id: "carrack",       name: "Carrack",            maxCrew: 5, cannons: 5, cannonRange: 12, registrationCost: 125000, hull: 5000, sail: 4500, gun: 4500, speed: 4.545, wake: 150 },
   { id: "galleon",       name: "Galleon",            maxCrew: 6, cannons: 6, cannonRange: 12, registrationCost: 250000, hull: 6000, sail: 5400, gun: 5400, speed: 4.167, wake: 200 },
   { id: "longship",      name: "Longship",           maxCrew: 8, cannons: 4, cannonRange: 12, registrationCost: 500000, hull: 6000, sail: 5400, gun: 5400, speed: 3.846, wake: 200 },
