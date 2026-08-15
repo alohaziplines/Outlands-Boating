@@ -5,17 +5,97 @@
    ========================================================================== */
 
 const SHIPS = [
-  { id: "small",        name: "Small Ship",         maxCrew: 2, hull: 2000, sail: 1800, gun: 1800, cannons: 2, speed: 6.25,  wake: 50,  reg: 0,       upgradeMult: 1 },
-  { id: "small-dragon",  name: "Small Dragonship",   maxCrew: 2, hull: 2000, sail: 1800, gun: 1800, cannons: 2, speed: 6.25,  wake: 50,  reg: 0,       upgradeMult: 1 },
-  { id: "medium",        name: "Medium Ship",        maxCrew: 3, hull: 3000, sail: 2700, gun: 2700, cannons: 3, speed: 5.556, wake: 75,  reg: 10000,   upgradeMult: 2 },
-  { id: "medium-dragon",  name: "Medium Dragonship",  maxCrew: 3, hull: 3000, sail: 2700, gun: 2700, cannons: 3, speed: 5.556, wake: 75,  reg: 10000,   upgradeMult: 2 },
-  { id: "large",        name: "Large Ship",         maxCrew: 4, hull: 4000, sail: 3600, gun: 3600, cannons: 4, speed: 5,     wake: 100, reg: 50000,   upgradeMult: 3 },
-  { id: "large-dragon",  name: "Large Dragonship",   maxCrew: 4, hull: 4000, sail: 3600, gun: 3600, cannons: 4, speed: 5,     wake: 100, reg: 50000,   upgradeMult: 3 },
-  { id: "carrack",       name: "Carrack",            maxCrew: 5, hull: 5000, sail: 4500, gun: 4500, cannons: 5, speed: 4.545, wake: 150, reg: 125000,  upgradeMult: 4 },
-  { id: "galleon",       name: "Galleon",            maxCrew: 6, hull: 6000, sail: 5400, gun: 5400, cannons: 6, speed: 4.167, wake: 200, reg: 250000,  upgradeMult: 5 },
-  { id: "longship",      name: "Longship",           maxCrew: 8, hull: 6000, sail: 5400, gun: 5400, cannons: 4, speed: 3.846, wake: 200, reg: 500000,  upgradeMult: 6 },
-  { id: "sotl",          name: "Ship of the Line",   maxCrew: 7, hull: 7000, sail: 6300, gun: 6300, cannons: 7, speed: 3.517, wake: 250, reg: 750000,  upgradeMult: 7 }
+  { id: "small",         name: "Small Ship",         maxCrew: 2, cannons: 2, cannonRange: 12, registrationCost: 0,       hull: 2000, sail: 1800, gun: 1800, speed: 6.25,  wake: 50 },
+  { id: "small-dragon",  name: "Small Dragonship",   maxCrew: 2, cannons: 2, cannonRange: 12, registrationCost: 0,       hull: 2000, sail: 1800, gun: 1800, speed: 6.25,  wake: 50 },
+  { id: "medium",        name: "Medium Ship",        maxCrew: 3, cannons: 3, cannonRange: 12, registrationCost: 10000,  hull: 3000, sail: 2700, gun: 2700, speed: 5.556, wake: 75 },
+  { id: "medium-dragon", name: "Medium Dragonship",  maxCrew: 3, cannons: 3, cannonRange: 12, registrationCost: 10000,  hull: 3000, sail: 2700, gun: 2700, speed: 5.556, wake: 75 },
+  { id: "large",         name: "Large Ship",         maxCrew: 4, cannons: 4, cannonRange: 12, registrationCost: 50000,  hull: 4000, sail: 3600, gun: 3600, speed: 5,     wake: 100 },
+  { id: "large-dragon",  name: "Large Dragonship",   maxCrew: 4, cannons: 4, cannonRange: 12, registrationCost: 50000,  hull: 4000, sail: 3600, gun: 3600, speed: 5,     wake: 100 },
+  { id: "carrack",       name: "Carrack",            maxCrew: 5, cannons: 5, cannonRange: 12, registrationCost: 125000, hull: 5000, sail: 4500, gun: 4500, speed: 4.545, wake: 150 },
+  { id: "galleon",       name: "Galleon",            maxCrew: 6, cannons: 6, cannonRange: 12, registrationCost: 250000, hull: 6000, sail: 5400, gun: 5400, speed: 4.167, wake: 200 },
+  { id: "longship",      name: "Longship",           maxCrew: 8, cannons: 4, cannonRange: 12, registrationCost: 500000, hull: 6000, sail: 5400, gun: 5400, speed: 3.846, wake: 200 },
+  { id: "sotl",          name: "Ship of the Line",   maxCrew: 7, cannons: 7, cannonRange: 12, registrationCost: 750000, hull: 7000, sail: 6300, gun: 6300, speed: 3.517, wake: 250 }
 ];
+
+/* --------------------------------------------------------------------------
+   IMPORTANT: a ship's stats are NOT fixed by ship type. Every crafted ship
+   rolls its own base stats within a range around a type average (shown
+   in-game as "Base vs Average"). The numbers on SHIPS above are the
+   *average* rolls for that ship type — used only to prefill sensible
+   starting values. The player enters their own ship's actual rolled base
+   stats, and upgrades/crew apply on top of THAT, not the average.
+   -------------------------------------------------------------------------- */
+
+// Ordered, grouped metadata for every stat a crafted ship rolls.
+// unit: 'flat' | 'pct' | 'time' (seconds) | 'speed' (tiles/sec)
+// bonusKey: which upgrade/crew bonus total (see OUTFITTINGS etc.) applies
+// bonusMode: 'mult-pct' (base*(1+bonus%)), 'add-pct' (base+bonus percentage points),
+//            'add-flat' (base+bonus), 'reduce-time' (base*(1-bonus%), floored),
+//            'reduce-time-div' (base/(1+bonus%)), 'reduce-pct' (base-bonus, floored at 25)
+const BASE_STAT_GROUPS = [
+  { key: "hull", label: "Hull &amp; Structure", stats: [
+    { key: "hull", label: "Hull Max Points", unit: "flat", bonusKey: "hull", bonusMode: "mult-pct" },
+    { key: "sail", label: "Sail Max Points", unit: "flat", bonusKey: "sail", bonusMode: "mult-pct" },
+    { key: "gun", label: "Gun Max Points", unit: "flat", bonusKey: "gun", bonusMode: "mult-pct" }
+  ]},
+  { key: "sailing", label: "Sailing", stats: [
+    { key: "fwdSpeed", label: "Forward Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
+    { key: "strafeSpeed", label: "Strafe Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
+    { key: "revSpeed", label: "Reverse Speed", unit: "speed", bonusKey: "spd", bonusMode: "mult-pct" },
+    { key: "wake", label: "Wake Scalar", unit: "pct", bonusKey: "wake", bonusMode: "reduce-pct" }
+  ]},
+  { key: "combat", label: "Combat", stats: [
+    { key: "cannonAcc", label: "Cannon Accuracy", unit: "pct", bonusKey: "acc", bonusMode: "add-pct" },
+    { key: "cannonDmgMin", label: "Cannon Min Damage", unit: "flat", bonusKey: "dmg", bonusMode: "mult-pct" },
+    { key: "cannonDmgMax", label: "Cannon Max Damage", unit: "flat", bonusKey: "dmg", bonusMode: "mult-pct" },
+    { key: "cannonReload", label: "Cannon Reload Time", unit: "time", bonusKey: "rld", bonusMode: "reduce-time-div" }
+  ]},
+  { key: "abilities", label: "Ability Cooldowns", stats: [
+    { key: "lesserCd", label: "Lesser Ability Cooldown", unit: "time", bonusKey: "lsr", bonusMode: "reduce-time" },
+    { key: "regularCd", label: "Regular Ability Cooldown", unit: "time", bonusKey: "reg", bonusMode: "reduce-time" },
+    { key: "greaterCd", label: "Greater Ability Cooldown", unit: "time", bonusKey: "grt", bonusMode: "reduce-time" }
+  ]},
+  { key: "repair", label: "Repair", stats: [
+    { key: "repairCd", label: "Repair Cooldown", unit: "time", bonusKey: "rpr", bonusMode: "reduce-time" },
+    { key: "hullRepair", label: "Hull Repair Amount", unit: "pct", bonusKey: "huRp", bonusMode: "add-pct" },
+    { key: "sailRepair", label: "Sail Repair Amount", unit: "pct", bonusKey: "saRp", bonusMode: "add-pct" },
+    { key: "gunRepair", label: "Gun Repair Amount", unit: "pct", bonusKey: "guRp", bonusMode: "add-pct" }
+  ]},
+  { key: "crew", label: "Crew", stats: [
+    { key: "crewHp", label: "Crew Hit Points Bonus", unit: "pct", bonusKey: "crHt", bonusMode: "add-pct" },
+    { key: "crewBravery", label: "Crew Bravery Bonus", unit: "pct", bonusKey: "brav", bonusMode: "add-pct" },
+    { key: "crewDmg", label: "Crew Damage Bonus", unit: "pct", bonusKey: "crDmg", bonusMode: "add-pct" },
+    { key: "crewHeal", label: "Crew Healing Bonus", unit: "pct", bonusKey: "heal", bonusMode: "add-pct" }
+  ]},
+  { key: "economy", label: "Economy", stats: [
+    { key: "boarding", label: "Boarding Chance", unit: "pct", bonusKey: "brd", bonusMode: "add-pct" },
+    { key: "doubloons", label: "Doubloons Earned Bonus", unit: "pct", bonusKey: "dbl", bonusMode: "add-pct" },
+    { key: "tidings", label: "Tidings Bonus", unit: "pct", bonusKey: "tid", bonusMode: "add-pct" },
+    { key: "fishing", label: "Effective Fishing Skill", unit: "flat", bonusKey: "fsh", bonusMode: "add-flat" },
+    { key: "spyglass", label: "Spyglass Distance Bonus", unit: "pct", bonusKey: "spy", bonusMode: "add-pct" }
+  ]}
+];
+
+const BASE_STAT_META = {};
+BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => { BASE_STAT_META[s.key] = s; }));
+
+// Default ("average roll") base stats to prefill per ship — the player
+// overwrites these with their own crafted ship's actual numbers.
+function getShipDefaults(ship) {
+  const cannonRatio = ship.cannons / 6; // 6 = galleon's cannon count, the reference ship
+  const round1 = n => Math.round(n * 10) / 10;
+  const round2 = n => Math.round(n * 100) / 100;
+  return {
+    hull: ship.hull, sail: ship.sail, gun: ship.gun,
+    fwdSpeed: round2(ship.speed), strafeSpeed: round2(ship.speed * 0.5), revSpeed: round2(ship.speed * 0.5),
+    wake: ship.wake,
+    cannonAcc: 60, cannonDmgMin: round1(40 * cannonRatio), cannonDmgMax: round1(60 * cannonRatio), cannonReload: 30,
+    lesserCd: 120, regularCd: 180, greaterCd: 240,
+    repairCd: 180, hullRepair: 10, sailRepair: 20, gunRepair: 20,
+    crewHp: 0, crewBravery: 0, crewDmg: 0, crewHeal: 0,
+    boarding: 25, doubloons: 0, tidings: 0, fishing: 0, spyglass: 0
+  };
+}
 
 // Stat keys shared across upgrades & crew:
 // hull, sail, gun  -> % bonus to max HP
