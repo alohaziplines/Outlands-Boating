@@ -26,6 +26,41 @@ function byId(arr, id) {
   return arr.find(x => x.id === id) || null;
 }
 
+/* ---------------- Saved builds (localStorage) ---------------- */
+
+const TEMPLATE_STORAGE_KEY = "outlandsBoating.savedBuilds";
+
+function loadAllTemplates() {
+  try { return JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function saveAllTemplates(templates) {
+  try { localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(templates)); return true; }
+  catch (e) { return false; }
+}
+
+function serializeBuild(state) {
+  return {
+    shipId: state.shipId,
+    roll: Object.assign({}, state.roll),
+    outfittingId: state.outfittingId,
+    specialtyId: state.specialtyId,
+    supplyId: state.supplyId,
+    crew: state.crew.map(m => ({ professionId: m.professionId, rankId: m.rankId, pips: Object.assign({}, m.pips || {}) })),
+    savedAt: new Date().toISOString()
+  };
+}
+
+function applyTemplateToState(state, tpl) {
+  state.shipId = (tpl.shipId && byId(SHIPS, tpl.shipId)) ? tpl.shipId : SHIPS[0].id;
+  state.roll = Object.assign({}, tpl.roll || {});
+  state.outfittingId = tpl.outfittingId || "";
+  state.specialtyId = tpl.specialtyId || "";
+  state.supplyId = tpl.supplyId || "";
+  state.crew = (tpl.crew || []).map(m => ({ professionId: m.professionId, rankId: m.rankId, pips: Object.assign({}, m.pips || {}) }));
+}
+
 function sortedByName(arr) {
   return arr.slice().sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -49,6 +84,7 @@ function addStats(totals, stats) {
 function createBuilderState() {
   return {
     shipId: SHIPS[0].id,
+    name: "",
     roll: {},         // stat key -> player-entered roll % (or flat, for fishing)
     outfittingId: "",
     specialtyId: "",
@@ -208,10 +244,6 @@ function renderBaseStatsTable(ledgerEl) {
   ledgerEl.innerHTML = html;
 }
 
-function clearRollInputs(ledgerEl) {
-  ledgerEl.querySelectorAll('[data-role="roll-stat"]').forEach(el => { el.value = ""; });
-}
-
 function updateFinalValues(ledgerEl, computed) {
   BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
     const el = ledgerEl.querySelector(`[data-role="final-stat"][data-stat="${s.key}"]`);
@@ -232,12 +264,20 @@ function initBuilder(root, opts) {
   const addCrewBtn = root.querySelector('[data-role="add-crew"]');
   const crewCapNote = root.querySelector('[data-role="crew-cap-note"]');
   const shipMetaEl = root.querySelector('[data-role="ship-meta"]');
-  const ledgerEl = root.querySelector('[data-role="ledger"]');
+  const ledgerTableEl = root.querySelector('[data-role="ledger-table"]');
+  const templateSelect = root.querySelector('[data-role="template-select"]');
+  const newBuildBtn = root.querySelector('[data-role="new-build"]');
+  const deleteTemplateBtn = root.querySelector('[data-role="delete-template"]');
+  const boatNameInput = root.querySelector('[data-role="boat-name"]');
+  const shipBadgeEl = root.querySelector('[data-role="ship-badge"]');
+  const saveTemplateBtn = root.querySelector('[data-role="save-template"]');
+  const statusMsgEl = root.querySelector('[data-role="status-msg"]');
 
   shipSelect.innerHTML = optionsHTML(SHIPS, state.shipId, null, false); // ship type stays smallest -> largest
   outfittingSelect.innerHTML = optionsHTML(OUTFITTINGS, state.outfittingId, "None", true);
   specialtySelect.innerHTML = optionsHTML(SPECIALTY_ITEMS, state.specialtyId, "None", true);
   supplySelect.innerHTML = optionsHTML(CREW_SUPPLIES, state.supplyId, "None", true);
+  renderBaseStatsTable(ledgerTableEl);
 
   function currentShip() { return byId(SHIPS, state.shipId); }
 
@@ -256,13 +296,43 @@ function initBuilder(root, opts) {
       <span>Cannon range ${ship.cannonRange}</span>
       <span>Registration ${fmtInt(ship.registrationCost)}</span>
     `;
+    shipBadgeEl.textContent = ship.name;
   }
 
   function recalc() {
     const computed = computeFinals(state);
-    updateFinalValues(ledgerEl, computed);
+    updateFinalValues(ledgerTableEl, computed);
     if (opts.onChange) opts.onChange(computed);
     return computed;
+  }
+
+  function showStatus(msg) {
+    statusMsgEl.textContent = msg;
+    statusMsgEl.classList.add("show");
+    setTimeout(() => statusMsgEl.classList.remove("show"), 2200);
+  }
+
+  function refreshTemplateList(selectName) {
+    const templates = loadAllTemplates();
+    const names = Object.keys(templates).sort((a, b) => a.localeCompare(b));
+    templateSelect.innerHTML = '<option value="">Load a saved build…</option>' +
+      names.map(n => `<option value="${n}" ${n === selectName ? "selected" : ""}>${n} (${byId(SHIPS, templates[n].shipId) ? byId(SHIPS, templates[n].shipId).name : "?"})</option>`).join("");
+    deleteTemplateBtn.disabled = !templateSelect.value;
+  }
+
+  function syncControlsToState() {
+    shipSelect.value = state.shipId;
+    outfittingSelect.value = state.outfittingId;
+    specialtySelect.value = state.specialtyId;
+    supplySelect.value = state.supplyId;
+    boatNameInput.value = state.name;
+    renderShipMeta();
+    renderCrew();
+    BASE_STAT_GROUPS.forEach(g => g.stats.forEach(s => {
+      const input = ledgerTableEl.querySelector(`[data-role="roll-stat"][data-stat="${s.key}"]`);
+      if (input) input.value = (state.roll[s.key] !== undefined && state.roll[s.key] !== 0) ? Math.abs(state.roll[s.key]) : "";
+    }));
+    recalc();
   }
 
   shipSelect.addEventListener("change", () => {
@@ -334,7 +404,7 @@ function initBuilder(root, opts) {
     recalc();
   });
 
-  ledgerEl.addEventListener("input", (e) => {
+  ledgerTableEl.addEventListener("input", (e) => {
     const el = e.target;
     if (el.dataset.role !== "roll-stat") return;
     const val = parseFloat(el.value);
@@ -342,10 +412,53 @@ function initBuilder(root, opts) {
     recalc();
   });
 
+  boatNameInput.addEventListener("input", () => { state.name = boatNameInput.value; });
+
+  saveTemplateBtn.addEventListener("click", () => {
+    const name = boatNameInput.value.trim() || "Untitled Build";
+    boatNameInput.value = name;
+    state.name = name;
+    const templates = loadAllTemplates();
+    templates[name] = serializeBuild(state);
+    const ok = saveAllTemplates(templates);
+    refreshTemplateList(name);
+    showStatus(ok ? `Saved "${name}" to this browser.` : "Couldn't save — your browser may be blocking local storage.");
+  });
+
+  templateSelect.addEventListener("change", () => {
+    const name = templateSelect.value;
+    deleteTemplateBtn.disabled = !name;
+    if (!name) return;
+    const templates = loadAllTemplates();
+    const tpl = templates[name];
+    if (!tpl) return;
+    applyTemplateToState(state, tpl);
+    state.name = name;
+    syncControlsToState();
+    showStatus(`Loaded "${name}".`);
+  });
+
+  deleteTemplateBtn.addEventListener("click", () => {
+    const name = templateSelect.value;
+    if (!name) return;
+    const templates = loadAllTemplates();
+    delete templates[name];
+    saveAllTemplates(templates);
+    refreshTemplateList();
+    showStatus(`Deleted "${name}".`);
+  });
+
+  newBuildBtn.addEventListener("click", () => {
+    Object.assign(state, createBuilderState());
+    templateSelect.value = "";
+    deleteTemplateBtn.disabled = true;
+    syncControlsToState();
+    showStatus("Started a new build.");
+  });
+
   renderShipMeta();
   renderCrew();
-  renderBaseStatsTable(ledgerEl);
-  clearRollInputs(ledgerEl);
+  refreshTemplateList();
   recalc();
 
   return { state, recalc, getResult: () => computeFinals(state) };
