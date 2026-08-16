@@ -267,7 +267,6 @@ function initBuilder(root, opts) {
   const ledgerTableEl = root.querySelector('[data-role="ledger-table"]');
   const templateSelect = root.querySelector('[data-role="template-select"]');
   const newBuildBtn = root.querySelector('[data-role="new-build"]');
-  const deleteTemplateBtn = root.querySelector('[data-role="delete-template"]');
   const boatNameInput = root.querySelector('[data-role="boat-name"]');
   const shipBadgeEl = root.querySelector('[data-role="ship-badge"]');
   const saveTemplateBtn = root.querySelector('[data-role="save-template"]');
@@ -317,7 +316,6 @@ function initBuilder(root, opts) {
     const names = Object.keys(templates).sort((a, b) => a.localeCompare(b));
     templateSelect.innerHTML = '<option value="">Load a saved build…</option>' +
       names.map(n => `<option value="${n}" ${n === selectName ? "selected" : ""}>${n} (${byId(SHIPS, templates[n].shipId) ? byId(SHIPS, templates[n].shipId).name : "?"})</option>`).join("");
-    deleteTemplateBtn.disabled = !templateSelect.value;
   }
 
   function syncControlsToState() {
@@ -427,7 +425,6 @@ function initBuilder(root, opts) {
 
   templateSelect.addEventListener("change", () => {
     const name = templateSelect.value;
-    deleteTemplateBtn.disabled = !name;
     if (!name) return;
     const templates = loadAllTemplates();
     const tpl = templates[name];
@@ -438,20 +435,9 @@ function initBuilder(root, opts) {
     showStatus(`Loaded "${name}".`);
   });
 
-  deleteTemplateBtn.addEventListener("click", () => {
-    const name = templateSelect.value;
-    if (!name) return;
-    const templates = loadAllTemplates();
-    delete templates[name];
-    saveAllTemplates(templates);
-    refreshTemplateList();
-    showStatus(`Deleted "${name}".`);
-  });
-
   newBuildBtn.addEventListener("click", () => {
     Object.assign(state, createBuilderState());
     templateSelect.value = "";
-    deleteTemplateBtn.disabled = true;
     syncControlsToState();
     showStatus("Started a new build.");
   });
