@@ -271,52 +271,6 @@ p { margin: 0 0 1em; }
   color: #04211c;
 }
 
-/* ---------------- Builder layout ---------------- */
-
-.builder-grid {
-  display: grid;
-  gap: 18px;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 900px) {
-  .builder-grid { grid-template-columns: 1.3fr 1fr; align-items: start; }
-}
-
-/* ---------------- Builder card (HUD panel with corner brackets) ---------------- */
-
-.card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 20px;
-  position: relative;
-  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
-}
-.card::before {
-  content: "";
-  position: absolute; top: 0; left: 0; width: 20px; height: 20px;
-  border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
-  pointer-events: none;
-}
-.card::after {
-  content: "";
-  position: absolute; bottom: 0; right: 0; width: 20px; height: 20px;
-  border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent);
-  pointer-events: none;
-}
-
-.card h3 { font-size: 0.98rem; margin-bottom: 4px; }
-
-.card__eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--amber);
-  margin-bottom: 6px;
-}
-
 .field-grid {
   display: grid;
   gap: 12px;
@@ -364,10 +318,9 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
   gap: 7px;
   font-size: 0.72rem;
   color: var(--text-soft);
-  margin-bottom: 16px;
   border-top: 1px dashed var(--border);
-  border-bottom: 1px dashed var(--border);
-  padding: 10px 0;
+  padding-top: 16px;
+  margin-top: 16px;
 }
 
 .ship-meta span {
@@ -619,21 +572,6 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
   color: var(--amber);
   margin-bottom: 9px;
 }
-
-.stat-table-head {
-  display: grid;
-  grid-template-columns: 1.5fr 0.6fr 1.1fr;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  padding: 0 0 10px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
-}
-.stat-table-head span:not(:first-child) { text-align: right; }
 
 .stat-row {
   display: grid;

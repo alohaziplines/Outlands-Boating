@@ -223,9 +223,7 @@ function renderCrewSlot(member, index) {
    never loses focus. Final-value cells are updated in place on recalc. */
 
 function renderBaseStatsTable(ledgerEl, idPrefix) {
-  let html = `<div class="stat-table-head" role="presentation">
-    <span>Stat</span><span>Roll %</span><span>Final</span>
-  </div>`;
+  let html = "";
   BASE_STAT_GROUPS.forEach(g => {
     html += `<div class="ledger-group"><h4>${g.label}</h4>`;
     g.stats.forEach(s => {
