@@ -291,7 +291,7 @@ function initBuilder(root, opts) {
     const ship = currentShip();
     shipMetaEl.innerHTML = `
       <span>Max crew ${ship.maxCrew}</span>
-      <span>${ship.cannons} cannons/side</span>
+      <span>Cannons/side ${ship.cannons}</span>
       <span>Cannon range ${ship.cannonRange}</span>
       <span>Registration ${fmtInt(ship.registrationCost)}</span>
     `;
@@ -439,7 +439,7 @@ function initBuilder(root, opts) {
     Object.assign(state, createBuilderState());
     templateSelect.value = "";
     syncControlsToState();
-    showStatus("Started a new build.");
+    showStatus("Started a new boat.");
   });
 
   renderShipMeta();

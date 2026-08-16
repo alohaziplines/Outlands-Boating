@@ -528,9 +528,11 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 
 .boat-header { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--border); }
 
-.boat-header__top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.boat-header__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
 
-.boat-name-field { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.boat-name-col { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+
+.boat-name-field { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
 .boat-name-input {
   font-family: var(--font-display);
@@ -551,7 +553,7 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 .edit-icon { flex: none; color: var(--text-faint); width: 15px; height: 15px; }
 
 .ship-badge {
-  flex: none;
+  align-self: flex-start;
   font-family: var(--font-mono);
   font-size: 0.64rem;
   letter-spacing: 0.1em;
@@ -561,8 +563,6 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
   padding: 4px 9px;
   white-space: nowrap;
 }
-
-.save-row { display: flex; gap: 8px; }
 
 .status-msg {
   font-family: var(--font-mono);
