@@ -622,7 +622,7 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 
 .stat-table-head {
   display: grid;
-  grid-template-columns: 1.5fr 0.9fr 0.8fr;
+  grid-template-columns: 1.5fr 0.6fr 1.1fr;
   gap: 8px;
   font-family: var(--font-mono);
   font-size: 0.6rem;
@@ -637,7 +637,7 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
 
 .stat-row {
   display: grid;
-  grid-template-columns: 1.5fr 0.9fr 0.8fr;
+  grid-template-columns: 1.5fr 0.6fr 1.1fr;
   gap: 8px;
   align-items: center;
   padding: 4px 0;
@@ -654,33 +654,42 @@ select:focus, input:focus { outline: none; border-color: var(--accent); box-shad
   left: 8px;
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: var(--down);
+  color: var(--text);
   pointer-events: none;
   z-index: 1;
 }
 
 .stat-input {
   width: 100%;
+  height: 34px;
+  box-sizing: border-box;
   text-align: right;
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  padding: 6px 8px;
+  padding: 0 8px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 0;
 }
 .stat-input::placeholder { color: var(--text-faint); }
-.stat-roll-cell--neg .stat-input { padding-left: 18px; border-color: rgba(255, 107, 91, 0.3); }
+.stat-roll-cell--neg .stat-input { padding-left: 18px; }
 .stat-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 
 .final-box {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   width: 100%;
+  height: 34px;
+  box-sizing: border-box;
   text-align: right;
-  padding: 6px 8px;
+  padding: 0 8px;
   border: 1px solid var(--border);
   background: var(--bg-input);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ledger-label { color: var(--text-soft); font-size: 0.83rem; }
