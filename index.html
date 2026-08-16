@@ -4,9 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Outlands Boating — UO Outlands Ship Stat Calculator &amp; Comparator</title>
-  <meta name="description" content="Free ship stat calculator for Ultima Online Outlands. Enter your ship's base stats, add Outfittings, Specialty Items, Crew Supplies, and crew, then compare two full ship builds side by side." />
+  <meta name="description" content="Free ship stat calculator for Ultima Online Outlands. Enter the % your ship rolled, add Outfittings, Specialty Items, Crew Supplies, and crew, then compare two full ship builds side by side." />
   <link rel="canonical" href="https://outlandsboating.com/" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- SEO: fill in with target keywords once keyword research/audit is done -->
+  <meta name="keywords" content="" />
 
   <!-- Open Graph / social -->
   <meta property="og:type" content="website" />
@@ -14,9 +18,15 @@
   <meta property="og:description" content="Build and compare Ultima Online Outlands ship configurations: base stats, upgrades, and crew, all in one calculator." />
   <meta property="og:url" content="https://outlandsboating.com/" />
   <meta property="og:site_name" content="Outlands Boating" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://outlandsboating.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Outlands Boating — UO Outlands ship stat calculator and comparator" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Outlands Boating — UO Outlands Ship Stat Calculator" />
   <meta name="twitter:description" content="Build and compare Ultima Online Outlands ship configurations: base stats, upgrades, and crew, all in one calculator." />
+  <meta name="twitter:image" content="https://outlandsboating.com/og-image.png" />
+  <meta name="twitter:image:alt" content="Outlands Boating — UO Outlands ship stat calculator and comparator" />
 
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#0a0d10" />
@@ -51,6 +61,8 @@
 </head>
 <body>
 
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   <header class="site-header">
     <div class="container header__row">
         <a class="brand" href="/">
@@ -62,14 +74,14 @@
           <span class="brand__tag">UO Outlands Ship Toolkit</span>
         </span>
       </a>
-      <div class="header__links">
+      <nav class="header__links" aria-label="Primary">
         <a class="pill-link" href="#calculator">Ship Builder</a>
         <a class="pill-link" href="#about">About</a>
-      </div>
+      </nav>
     </div>
   </header>
 
-  <main>
+  <main id="main-content">
     <section class="hero">
       <div class="container">
         <div class="hero__eyebrow">Live Stat Readout</div>
@@ -103,7 +115,7 @@
           <div class="build-bar">
             <div class="build-bar__label">Your Build</div>
             <div class="build-bar__row">
-              <select class="tpl-select" data-role="template-select">
+              <select class="tpl-select" data-role="template-select" aria-label="Load a saved build">
                 <option value="">Load a saved build…</option>
               </select>
               <button type="button" class="btn" data-role="new-build">+ New Boat</button>
@@ -129,19 +141,19 @@
               <div class="ship-meta" data-role="ship-meta"></div>
             </div>
 
-            <div class="ledger" aria-live="polite">
+            <div class="ledger">
               <div class="boat-header">
                 <div class="boat-header__top">
                   <div class="boat-name-col">
                     <div class="boat-name-field">
                     <svg class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                    <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" />
+                    <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" aria-label="Boat name" />
                     </div>
                     <span class="ship-badge" data-role="ship-badge"></span>
                   </div>
                   <button type="button" class="btn btn--solid" data-role="save-template">Save Template</button>
                 </div>
-                <p class="status-msg" data-role="status-msg"></p>
+                <p class="status-msg" data-role="status-msg" aria-live="polite"></p>
               </div>
               <div data-role="ledger-table"></div>
             </div>
@@ -165,7 +177,7 @@
               <div class="build-bar">
                 <div class="build-bar__label">Your Build</div>
                 <div class="build-bar__row">
-                  <select class="tpl-select" data-role="template-select">
+                  <select class="tpl-select" data-role="template-select" aria-label="Load a saved build">
                     <option value="">Load a saved build…</option>
                   </select>
                   <button type="button" class="btn" data-role="new-build">+ New Boat</button>
@@ -190,19 +202,19 @@
                   </div>
                   <div class="ship-meta" data-role="ship-meta"></div>
                 </div>
-                <div class="ledger" aria-live="polite">
+                <div class="ledger">
                   <div class="boat-header">
                     <div class="boat-header__top">
                       <div class="boat-name-col">
                         <div class="boat-name-field">
                         <svg class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                        <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" />
+                        <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" aria-label="Boat name" />
                         </div>
                         <span class="ship-badge" data-role="ship-badge"></span>
                       </div>
                       <button type="button" class="btn btn--solid" data-role="save-template">Save Template</button>
                     </div>
-                    <p class="status-msg" data-role="status-msg"></p>
+                    <p class="status-msg" data-role="status-msg" aria-live="polite"></p>
                   </div>
                   <div data-role="ledger-table"></div>
                 </div>
@@ -222,7 +234,7 @@
               <div class="build-bar">
                 <div class="build-bar__label">Your Build</div>
                 <div class="build-bar__row">
-                  <select class="tpl-select" data-role="template-select">
+                  <select class="tpl-select" data-role="template-select" aria-label="Load a saved build">
                     <option value="">Load a saved build…</option>
                   </select>
                   <button type="button" class="btn" data-role="new-build">+ New Boat</button>
@@ -247,19 +259,19 @@
                   </div>
                   <div class="ship-meta" data-role="ship-meta"></div>
                 </div>
-                <div class="ledger" aria-live="polite">
+                <div class="ledger">
                   <div class="boat-header">
                     <div class="boat-header__top">
                       <div class="boat-name-col">
                         <div class="boat-name-field">
                         <svg class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                        <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" />
+                        <input type="text" class="boat-name-input" data-role="boat-name" placeholder="Untitled Build" aria-label="Boat name" />
                         </div>
                         <span class="ship-badge" data-role="ship-badge"></span>
                       </div>
                       <button type="button" class="btn btn--solid" data-role="save-template">Save Template</button>
                     </div>
-                    <p class="status-msg" data-role="status-msg"></p>
+                    <p class="status-msg" data-role="status-msg" aria-live="polite"></p>
                   </div>
                   <div data-role="ledger-table"></div>
                 </div>

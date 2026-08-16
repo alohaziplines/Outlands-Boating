@@ -222,21 +222,26 @@ function renderCrewSlot(member, index) {
 /* Rendered fresh only on ship change; inputs otherwise persist so typing
    never loses focus. Final-value cells are updated in place on recalc. */
 
-function renderBaseStatsTable(ledgerEl) {
-  let html = `<div class="stat-table-head">
+function renderBaseStatsTable(ledgerEl, idPrefix) {
+  let html = `<div class="stat-table-head" role="presentation">
     <span>Stat</span><span>Roll %</span><span>Final</span>
   </div>`;
   BASE_STAT_GROUPS.forEach(g => {
     html += `<div class="ledger-group"><h4>${g.label}</h4>`;
     g.stats.forEach(s => {
+      const labelId = `${idPrefix}-label-${s.key}`;
+      const hintId = `${idPrefix}-hint-${s.key}`;
       html += `
         <div class="stat-row">
-          <span class="ledger-label">${s.label}</span>
+          <span class="ledger-label" id="${labelId}">${s.label}</span>
           <span class="stat-roll-cell ${s.negativeOnly ? "stat-roll-cell--neg" : ""}">
-            ${s.negativeOnly ? `<span class="stat-sign">−</span>` : ""}
-            <input type="number" step="any" min="0" class="stat-input" placeholder="0" data-role="roll-stat" data-stat="${s.key}" />
+            ${s.negativeOnly ? `<span class="stat-sign" aria-hidden="true">−</span>` : ""}
+            <input type="number" step="any" min="0" class="stat-input" placeholder="0"
+              data-role="roll-stat" data-stat="${s.key}"
+              aria-labelledby="${labelId}" ${s.negativeOnly ? `aria-describedby="${hintId}"` : ""} />
+            ${s.negativeOnly ? `<span class="sr-only" id="${hintId}">This value always reduces the stat; enter it as a positive number.</span>` : ""}
           </span>
-          <span class="ledger-value final-box" data-role="final-stat" data-stat="${s.key}">—</span>
+          <span class="ledger-value final-box" data-role="final-stat" data-stat="${s.key}" aria-labelledby="${labelId}">—</span>
         </div>`;
     });
     html += `</div>`;
@@ -276,7 +281,7 @@ function initBuilder(root, opts) {
   outfittingSelect.innerHTML = optionsHTML(OUTFITTINGS, state.outfittingId, "None", true);
   specialtySelect.innerHTML = optionsHTML(SPECIALTY_ITEMS, state.specialtyId, "None", true);
   supplySelect.innerHTML = optionsHTML(CREW_SUPPLIES, state.supplyId, "None", true);
-  renderBaseStatsTable(ledgerTableEl);
+  renderBaseStatsTable(ledgerTableEl, root.id);
 
   function currentShip() { return byId(SHIPS, state.shipId); }
 
